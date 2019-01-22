@@ -1,5 +1,8 @@
 ﻿namespace TicTacToe
 
+open System.Linq
+open System.Collections.Generic
+
 
 type Player =
     | X
@@ -23,10 +26,11 @@ type Message =
     | Play of Pos
     | Restart
 
-type Board = Map<Pos, GameCell>
+type Board = IDictionary<Pos, GameCell>
 
 type Row = GameCell list
 
+[<CLIMutable>]
 type Model =
     { NextUp : Player
       Board : Board
@@ -47,7 +51,7 @@ module Game =
           Board = initialBoard
           Result = StillPlaying }
 
-    let anyMoreMoves x = x.Board |> Map.exists (fun _ c -> c = Empty)
+    let anyMoreMoves x = x.Board.Values.Any(fun x -> x = Empty)
 
     let lines = 
         [ for row in 0 .. 2 do yield [ (row, 0); (row, 1); (row, 2) ]
@@ -74,8 +78,8 @@ module Game =
         let newModel =
             match msg with
             | Play pos ->
-                { model with Board = model.Board.Add (pos, Full model.NextUp)
-                             NextUp = model.NextUp.Swap }
+                model.Board.Add(pos, Full model.NextUp)
+                { model with NextUp = model.NextUp.Swap }
             | Restart ->
                 { model with NextUp = X; Board = initialBoard }
         let result = getGameResult newModel
