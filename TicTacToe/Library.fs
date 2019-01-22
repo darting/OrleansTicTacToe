@@ -30,7 +30,6 @@ type Board = IDictionary<Pos, GameCell>
 
 type Row = GameCell list
 
-[<CLIMutable>]
 type Model =
     { NextUp : Player
       Board : Board
@@ -43,8 +42,7 @@ module Game =
             for y in 0 .. 2 do
               yield x, y ]
 
-    let initialBoard =
-        Map.ofList [ for p in positions -> p, Empty ]
+    let initialBoard = ([ for p in positions -> p, Empty ]).ToDictionary((fun kvp -> fst kvp), (fun kvp -> snd kvp))
 
     let init () =
         { NextUp = X
