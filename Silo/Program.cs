@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Serilog;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -29,6 +30,12 @@ namespace Silo
 
         private static async Task<ISiloHost> StartSilo()
         {
+            Log.Logger = new LoggerConfiguration()
+                                .MinimumLevel.Verbose()
+                                .WriteTo.File("log.txt")
+                                .WriteTo.Console()
+                                .CreateLogger();
+
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
                 .UseDashboard(x =>
@@ -47,7 +54,10 @@ namespace Silo
                          .AddApplicationPart(typeof(IGame).Assembly).WithCodeGeneration()
                          .AddApplicationPart(typeof(TicTacToe.Game).Assembly).WithCodeGeneration();
                 })
-                .ConfigureLogging(l => l.AddConsole());
+                .ConfigureLogging(l =>
+                {
+                    l.AddSerilog(dispose: true);
+                });
 
             var host = builder.Build();
             await host.StartAsync();
